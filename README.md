@@ -1,40 +1,72 @@
-# Arty-Z7-20 HDMI HLS Sobel Filter 
+# Arty-Z7-20 - HDMI passthrough with HLS AXI stream sobel filter 
 
 ## Base HDMI Project derived from 
 https://github.com/Digilent/Arty-Z7-20-hdmi-in/tree/v2020.1
 
 This project demonstrates how to use HLS (High Level Synthesis) language to create image filters (Sobel-Filter, Edge Detection). The HLS logic is exported as 
-IP core and inserted into the video block design AXI stream.
+IP core and inserted into the video block design AXI stream. It uses the HDMI input (Tested with camera, Apeman 1080P) and shows the processed result on the HDMI output in live.
 
-| Option    | Function                                                                                                                 |
-| --------- | ------------------------------------------------------------------------------------------------------------------------ |
-| 1         | Change the resolution of the HDMI output to the monitor.                                                                 |
-| 2         | Change the frame buffer to display on the HDMI monitor.                                                                  |
-| 3/4       | Store a test pattern in the chosen video frame buffer - color bar or blended.                                            |
-| 5         | Start/Stop streaming video data from HDMI to the chosen video frame buffer.                                              |
-| 6         | Change the video frame buffer that HDMI data is streamed into.                                                           |
-| 7         | Invert and store the current video frame into the next video frame buffer and display it.                                |
-| 8         | Scale the current video frame to the display resolution, store it into the next video frame buffer, and then display it. |
-
+## Xilinx Tools Version: 2020.2
 
 ## Requirements
 ------------
 * **Arty Z7-20**
-* **Vivado and Vitis 2020.1 Installations**
+* **Vivado and Vitis Installations**
 * **Vitis Video Library** 
 * **Open CV 3.3.0 installation**
 * **Serial Terminal Emulator Application**
 * **MicroUSB Cable**
 * **2 HDMI Cables**
 * **HDMI Capable Monitor/TV**
-* **HDMI Capable Source** (likely the computer used for Vivado and Vitis)
+* **HDMI Capable Source (Apeman 1080p or HDMI output from Laptop)**
 
-## How to build project
-- make
+## Compile project:
+------
+Compile everything: 
+```bash
+make
+```
 
-# Revision control
-## From Vivado tcl shell: 
-- write_bd_tcl [get_property DIRECTORY [current_project]]/../source/scripts/bd.tcl -include_layout -force
+Create and compile Vivado project: 
+```bash
+make fpga
+```
 
-## Vitis source files:
-- ./sw/vitis/src
+Create and compile Vitis bare metal project, create boot binary
+```bash
+make vitis
+```
+
+Applying changes:
+------
+Vivado Block Design: From tcl shell:
+```bash
+write_bd_tcl [get_property DIRECTORY [current_project]]/../source/scripts/bd.tcl -include_layout -force
+```
+
+Software Design (Vitis): Put vitis source code under:
+* Put all files in ./vitis/src 
+
+BSP directory structure: 
+------
+```bash
+├── build                       <--- Build Outputs (FPGA and Boot binaries)
+├── hw                          <--- All source files related to Vivado Design 
+│   ├── build                   <--- Vivado Project  
+│   ├── scripts                 <--- TCL scripts to recreate project in batch mode
+│   │   └── settings.tcl        <--- Set FPGA type, project name, and number of processors for compilation 
+│   └── source
+│       ├── constraints         <--- Constraints location. Files will be imported during creation
+│       ├── hdl                 <--- Put HDL IP blocks (non block design) here
+│       ├── ip                  <--- Put IP blocks (used by ip integrator) here
+│       └── scripts
+│           └── bd.tcl          <--- TCL script to recreate the block design.
+└── sw
+    ├── petalinux               <--- Petalinux project 
+    ├── vitis                   <--- Project folder containing bare metal application 
+    │   ├── build               <--- Boot image is located here (BOOT.bin)
+    │   ├── scripts             <--- TCL scripts for batch mode
+    │   ├── src                 <--- Bare metal source code files
+    │   └── ws                  <--- Vitis workspace
+    └── xsa                     <--- Hardware description file, exported by vivado
+```
