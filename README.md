@@ -1,5 +1,7 @@
 # Arty-Z7-20 - HDMI passthrough with HLS AXI stream sobel filter 
 
+![image](sobel_filter.png)
+
 ## Base HDMI Project derived from 
 https://github.com/Digilent/Arty-Z7-20-hdmi-in/tree/v2020.1
 
