@@ -38,7 +38,6 @@
 #include "xil_cache.h"
 #include "timer_ps/timer_ps.h"
 #include "xparameters.h"
-#include "sobel_filter/sobel.h"
 
 /*
  * XPAR redefines
@@ -261,17 +260,6 @@ void DemoRun()
 			VideoStart(&videoCapt);
 			DisplayChangeFrame(&dispCtrl, nextFrame);
 			break;
-		case '9':
-			nextFrame = videoCapt.curFrame + 1;
-			if (nextFrame >= DISPLAY_NUM_FRAMES)
-			{
-				nextFrame = 0;
-			}
-			VideoStop(&videoCapt);
-			DemoSobelFilter(pFrames[videoCapt.curFrame], pFrames[nextFrame], videoCapt.timing.HActiveVideo, videoCapt.timing.VActiveVideo);
-			VideoStart(&videoCapt);
-			DisplayChangeFrame(&dispCtrl, nextFrame);
-			break;
 		case 'q':
 			break;
 		case 'r':
@@ -309,7 +297,6 @@ void DemoPrintMenu()
 	xil_printf("6 - Change Video Framebuffer Index\n\r");
 	xil_printf("7 - Grab Video Frame and invert colors\n\r");
 	xil_printf("8 - Grab Video Frame and scale to Display resolution\n\r");
-	xil_printf("9 - Grab Video Frame and perform sobel filter\n\r");
 	xil_printf("q - Quit\n\r");
 	xil_printf("\n\r");
 	xil_printf("\n\r");
@@ -426,36 +413,6 @@ int DemoGetInactiveFrame(DisplayCtrl *DispCtrlPtr, VideoCapture *VideoCaptPtr)
 		}
 	}
 	xil_printf("Unreachable error state reached. All buffers are in use.\r\n");
-}
-
-void DemoSobelFilter(u8 *srcFrame, u8 *destFrame, u32 width, u32 height)
-{
-	u8   *rgb,
-		 *gray,
-		 *sobel_h_res,
-		 *sobel_v_res,
-		 *contour_img_gray,
-		 *contour_img_rgb;
-
-	rgb = srcFrame;
-
-	timer_measure_start();
-	int gray_size = sobelFilter(rgb, &gray, &sobel_h_res, &sobel_v_res, &contour_img_gray, width, height);
-	int rgb_size = GrayToRgb(contour_img_gray, &contour_img_rgb, gray_size);
-	memcpy(destFrame, contour_img_rgb, rgb_size);
-	timer_print_diff("Sobel Filter Time: ", timer_measure_stop());
-
-	/*
-	 * Flush the framebuffer memory range to ensure changes are written to the
-	 * actual memory, and therefore accessible by the VDMA.
-	 */
-	Xil_DCacheFlushRange((unsigned int) destFrame, DEMO_MAX_FRAME);
-
-	free(gray);
-	free(sobel_h_res);
-	free(sobel_v_res);
-	free(contour_img_gray);
-	free(contour_img_rgb);
 }
 
 void DemoInvertFrame(u8 *srcFrame, u8 *destFrame, u32 width, u32 height, u32 stride)

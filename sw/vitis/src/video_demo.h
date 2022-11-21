@@ -38,7 +38,7 @@
 #define DEMO_PATTERN_1 1
 
 #define DEMO_MAX_FRAME (1920*1080*3)
-#define DEMO_STRIDE (1280*3)
+#define DEMO_STRIDE (1920*3)
 
 /*
  * Configure the Video capture driver to start streaming on signal
